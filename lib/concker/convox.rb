@@ -4,6 +4,17 @@ module Convox
     result
   end
 
+  def self.app_url(app_name, process_type)
+    result = `convox apps info #{app_name} | tail -n +5 | grep "(#{process_type})" | head -n 1`
+    res = result.split(" ")
+    
+    if res.first == "Endpoints"
+      return res[1]
+    else
+      return res.first
+    end
+  end
+
   def self.app_running_yet?(app_name)
     result = `convox apps info #{app_name} | grep "Status\s*running"`
     !result.empty?

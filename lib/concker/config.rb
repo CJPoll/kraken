@@ -25,6 +25,7 @@ class Config
       app.create
 
       app.update_resource_env_vars
+      app.update_dependency_env_vars
 
       app.deploy if Settings.deploy?
     end
