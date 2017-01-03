@@ -1,16 +1,14 @@
 current_dir = File.dirname(__FILE__)
 require "#{current_dir}/app"
+require "#{current_dir}/resource"
 require 'json'
 
 class Config
-  attr_accessor :app, :services
+  attr_accessor :app, :resources
 
-  def initialize(json)
-    @app = Application.new
-    @app.name = json['app']
-    services = json['services'] || []
-    @services = services.map do |s_json|
-      Service.new(s_json, @app.name)
+  def initialize(config_json)
+    @apps = config_json.map do |json|
+      Application.new(json)
     end
   end
 
@@ -22,9 +20,13 @@ class Config
   end
 
   def create
-    @app.create
-    @services.each do |service|
-      service.create
+    @apps.each do |app|
+      app.resources.each &:create
+      app.create
+
+      app.update_resource_env_vars
+
+      app.deploy if Settings.deploy?
     end
   end
 end

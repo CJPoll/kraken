@@ -1,18 +1,19 @@
-class UnknownServiceType < StandardError; end
+require_relative './convox'
+class UnknownResourceType < StandardError; end
 
-module Service
+module Resource
   def self.new(json, app_name=nil)
-    services = {
+    resources = {
       'postgres' => Postgres,
       'redis' => Redis
     }
     type = json['type']
-    service = services[type]
+    resource = resources[type]
 
-    if service
-      service.new(json, app_name)
+    if resource
+      resource.new(json, app_name)
     else
-      raise UnknownServiceType
+      raise UnknownResourceType
     end
   end
 end
@@ -64,7 +65,9 @@ class Option
   end
 end
 
-module Service
+module Resource
+  attr_reader :env_var_name, :url
+
   def self.included(base)
     base.extend ClassMethods
   end
@@ -74,43 +77,52 @@ module Service
       instance_variable_set(:"@#{inst_var}", json[inst_var.to_s])
     end
 
-    @app_name = json['name'] || "#{app_name}-#{service_name}"
+    @app_name = json['name'] || "#{app_name}-#{resource_name}"
+    @env_var_name = json['url_env_var']
   end
 
-  def service_name
-    self.class.service_name
+  def resource_name
+    self.class.resource_name
   end
 
   def create
-    to_command(:create).run
+    unless Convox.resource_running_yet?(@app_name)
+      to_command(:create).run
+
+      Convox.watch do
+        Convox.resource_running_yet?(@app_name)
+      end
+    end
+
+    @url = Convox.resource_url(@app_name)
   end
 
   module ClassMethods
-    attr_accessor :service_name, :properties
+    attr_accessor :resource_name, :properties
 
-    def props(map)
+    def props(props)
       name = @name
-      @properties = map
+      @properties = props
 
       define_method(:to_command) do |command|
-        name = self.class.service_name
-        cmd = Command.new "convox services #{command} #{name}"
+        name = self.class.resource_name
+        cmd = Command.new "convox resources #{command} #{name}"
 
-        map.each do |inst_var, hash|
+        props.each do |inst_var, hash|
           value = instance_variable_get(:"@#{inst_var}")
           option = Option.from(hash, value)
           cmd.add(option)
         end
 
         name_opt = Option.new(:option, 'name', @app_name)
-        cmd.option(name_opt) if @app_name
+        cmd.add(name_opt) if @app_name
 
         cmd
       end
     end
-    
+
     def name(name)
-      @service_name = name
+      @resource_name = name
     end
   end
 
@@ -121,7 +133,7 @@ module Service
 end
 
 class Postgres
-  include Service
+  include Resource
 
   name :postgres
 
@@ -134,7 +146,7 @@ class Postgres
 end
 
 class Redis
-  include Service
+  include Resource
 
   name :redis
 

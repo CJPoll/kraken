@@ -1,7 +1,7 @@
 {
-	"app": "concker",
-	"env": "dev",
-	"services": [
+	"app": "onix",
+	"environment": "dev",
+	"resources": [
 		{
 			"type": "postgres",
 			"storage": 10,
