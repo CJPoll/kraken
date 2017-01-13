@@ -44,6 +44,10 @@ module Convox
     end
   end
 
+  def self.instances
+    `convox instances`
+  end
+
   def self.promote(app_name, key)
     puts "Promoting #{app_name}"
     `convox releases promote #{key} --app #{app_name}`
@@ -77,7 +81,7 @@ module Convox
     kv_pairs = kv_pairs.join(" ")
     puts "Setting Env for #{app_name} (#{kv_pairs})"
 
-    `convox env set #{kv_pairs} --app #{app_name}`
+    `convox env set #{kv_pairs} --app #{app_name} --promote`
   end
 
   def self.watch(&block)

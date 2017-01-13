@@ -1,4 +1,5 @@
 current_dir = File.dirname(__FILE__)
+
 require "#{current_dir}/app"
 require "#{current_dir}/resource"
 require 'json'
@@ -13,7 +14,7 @@ class Config
   end
 
   def self.load
-    file_name = "concker.json"
+    file_name = "kracken.json"
     json = File.read(file_name)
     config_json = ::JSON.parse(json)
     Config.new(config_json)
@@ -24,10 +25,12 @@ class Config
       app.resources.each &:create
       app.create
 
+      app.update_source;
+      app.update_base_env_vars
       app.update_resource_env_vars
       app.update_dependency_env_vars
 
-      app.deploy if Settings.deploy?
+      app.deploy if Settings.deploy?(app.name)
     end
   end
 end
