@@ -14,7 +14,7 @@ class Config
   end
 
   def self.load
-    file_name = "kracken.json"
+    file_name = "kraken.json"
     json = File.read(file_name)
     config_json = ::JSON.parse(json)
     Config.new(config_json)
@@ -22,6 +22,7 @@ class Config
 
   def create
     @apps.each do |app|
+      next if Settings.ignore?(app.name)
       app.resources.each &:create
       app.create
 
