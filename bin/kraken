@@ -1,5 +1,4 @@
 #! /usr/bin/env ruby
-require 'byebug'
 
 current_dir = File.realdirpath(__FILE__)
 
@@ -8,7 +7,6 @@ require "#{current_dir}/../../lib/kraken/settings"
 
 def main
   Settings.load!(ARGV.dup)
-  byebug
   config = Config.load
 
   config.create
