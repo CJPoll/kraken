@@ -7,7 +7,7 @@ module Convox
   def self.app_url(app_name, process_type)
     result = `convox apps info #{app_name} | tail -n +5 | grep "(#{process_type})" | head -n 1`
     res = result.split(" ")
-    
+
     if res.first == "Endpoints"
       return res[1]
     else
