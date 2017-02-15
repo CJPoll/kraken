@@ -1,5 +1,4 @@
 require_relative './convox'
-require 'byebug'
 
 class NoGitRepoConfigured < StandardError; end
 
@@ -27,8 +26,6 @@ class Application
 
   def update_source
     raise  NoGitRepoConfigured unless @github
-
-    byebug
 
     system <<-EOC
       mkdir -p _build;

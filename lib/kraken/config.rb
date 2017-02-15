@@ -4,10 +4,17 @@ require "#{current_dir}/app"
 require "#{current_dir}/resource"
 require 'json'
 
+class DontDestroyProductionPlease < StandardError; end
+
 class Config
   attr_accessor :app, :resources
 
   def initialize(config_json)
+    rack = `convox rack | grep Name | awk '{ print $2 }'`
+
+    prod_error_message = 'Please do not run this on the production rack'
+    raise DontDestroyProductionPlease, prod_error_message if production?(rack)
+
     @apps = config_json.map do |json|
       Application.new(json)
     end
@@ -33,5 +40,9 @@ class Config
 
       app.deploy if Settings.deploy?(app.name)
     end
+  end
+
+  def production?(rack)
+    rack =~ /prod/ || rack =~ /convox/
   end
 end
