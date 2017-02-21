@@ -1,0 +1,114 @@
+[
+	{
+        "app": "navigator",
+        "environment": "dev",
+        "github": "git@github.com:podium/navigator",
+		"env_file": "./.env.dev-rack",
+        "post_deploy": "",
+		"resources": [
+            {
+                "type": "postgres",
+                "storage": 10,
+                "instance_type": "db.t2.medium",
+                "multiple_availability_zones": false,
+                "private": false,
+				"url_env_var": "DATABASE_URL"
+            }
+		],
+        "scale": {
+            "worker": {
+                "count": 1,
+                "memory": 1024,
+                "cpu": 0
+            }
+        }
+	},
+    {
+        "app": "rabbitmq",
+        "environment": "dev",
+        "github": "git@github.com:cjpoll/rabbitmq-docker",
+        "post_deploy": "",
+        "scale": {
+            "worker": {
+                "count": 1,
+                "memory": 1024,
+                "cpu": 0
+            }
+        }
+    },
+    {
+        "app": "stormcrow",
+        "environment": "dev",
+        "github": "git@github.com:podium/stormcrow",
+		"gitref": "dev-rack",
+		"env_file": "./.env.dev-rack",
+        "post_deploy": "",
+        "resources": [],
+        "depends_on": {},
+        "scale": {
+            "web": {
+                "count": 1,
+                "memory": 512,
+                "cpu": 0
+            }
+        }
+    },
+	{
+		"app": "review-rocket",
+		"environment": "dev",
+		"github": "git@github.com:podium/review_rocket",
+		"gitref": "dev-rack-env",
+		"post_deploy": "./post_deploy_hooks/review_rocket",
+		"env_file": "./.env.dev-rack",
+		"resources": [
+            {
+                "type": "postgres",
+                "storage": 10,
+                "instance_type": "db.t2.medium",
+                "multiple_availability_zones": false,
+                "private": false,
+				"url_env_var": "DATABASE_URL"
+            },
+			{
+				"type": "redis",
+				"instance_type": "cache.t2.micro",
+				"private": false,
+				"url_env_var": "REDIS_URL"
+			}
+		],
+		"depends_on": {
+			"rabbitmq": {
+                "process_type": "worker",
+                "env_var_name": "RABBIT_HOST",
+                "transform": "./dependency_transforms/rabbitmq_url"
+			},
+			"stormcrow": {
+				"process_type": "web",
+				"env_var_name": "ACCOUNTS_URL",
+				"transform": "./dependency_transforms/https"
+			}
+		},
+        "scale": {
+            "web": {
+                "count": 1,
+                "memory": 2048,
+                "cpu": 0
+            },
+			"worker": {
+				"count": 1,
+				"memory": 1024,
+				"cpu": 0
+			},
+			"clock": {
+				"count": 1,
+				"memory": 512,
+				"cpu": 0
+			},
+			"sneakers": {
+				"count": 1,
+				"memory": 512,
+				"cpu": 0
+			}
+        }
+	}
+]
