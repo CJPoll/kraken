@@ -30,10 +30,12 @@ class Config
   def create
     @apps.each do |app|
       next if Settings.ignore?(app.name)
+
       app.resources.each &:create
       app.create
 
       app.update_source;
+      app.set_git_ref
       app.update_base_env_vars
       app.update_resource_env_vars
       app.update_dependency_env_vars

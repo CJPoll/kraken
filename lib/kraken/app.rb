@@ -12,6 +12,7 @@ class Application
     @post_deploy = json['post_deploy']
     @dependencies = json['depends_on']
     @env_file = json['env_file']
+    @git_ref = json['gitref'] || 'master'
 
     resources = json['resources'] || []
 
@@ -31,7 +32,7 @@ class Application
       mkdir -p _build;
       cd _build;
       git clone #{@github} #{@name};
-      cd #{@name} && git pull origin master;
+     cd #{@name} && git checkout master && git pull origin master;
     EOC
   end
 
@@ -39,6 +40,14 @@ class Application
     system "cd _build/#{@name} && convox deploy -a #{deploy_name} --wait"
 
     system "#{@post_deploy} #{deploy_name}" if @post_deploy
+  end
+
+  def set_git_ref
+    unless @git_ref == 'master'
+      cmd = "cd _build/#{@name}; git fetch; git checkout #{@git_ref} && git pull origin #{@git_ref}"
+      puts cmd
+      system cmd
+    end
   end
 
   def deploy_name
