@@ -5,6 +5,7 @@
 1. Docker
 1. Convox
 1. Ruby
+1. Ensure you're a blackbox admin for any apps you intend to deploy
 
 ## Usage
 
