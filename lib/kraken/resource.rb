@@ -34,6 +34,7 @@ class Command
 
   def run
     cmd = self.to_s
+    puts "Running: #{cmd}"
     system cmd
   end
 end
