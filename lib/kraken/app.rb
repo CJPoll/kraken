@@ -7,7 +7,7 @@ class Application
 
   def initialize(json)
     @name = json['app']
-    @environment = `whoami`.chomp.gsub(/\s/, '-')
+    @environment = json['environment']
     @github = json['github']
     @post_deploy = json['post_deploy']
     @dependencies = json['depends_on']
