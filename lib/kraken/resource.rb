@@ -54,7 +54,7 @@ class Option
     when :flag
       opt += "--#{@name}" if @value
     when :option
-      opt += "--#{@name} #{@value}" if @value
+      opt += "--#{@name}=#{@value}" if @value
     end
   end
 
